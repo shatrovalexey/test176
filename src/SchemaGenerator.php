@@ -67,12 +67,8 @@ class SchemaGenerator
         $this->_domh->loadHTML("\xEF\xBB\xBF{$src}");
         $result = new \DOMXPath($dom);
         $result->registerNamespace(static::NS_NAME, static::NS_URI);
-        $result->registerPHPFunctionNS(
-            static::NS_URI
-            , 'css-class-contains'
-            , fn (?string $classList, string $class)
-                : bool => preg_match('{(?:^|\s)' . preg_quote($class) . '(\s|$)}uis', $classList)
-        );
+        $result->registerPHPFunctionNS(static::NS_URI, 'css-classlist-contains'
+            , [StringHelper::class, 'cssClassListContains',]);
 
         return $result;
     }
@@ -112,7 +108,7 @@ class SchemaGenerator
             '@type' => 'BreadcrumbList'
             , 'itemListElement' => XPathHelper::getList($this->_xpathh, '
 (//*[@class = "breadcrumbs"])[1]
-    //*[sg:css-class-contains(@class, "breadcrumbs__breadcrumb")]
+    //*[sg:css-classlist-contains(@class, "breadcrumbs__breadcrumb")]
                 ', fn (\DOMNode $item, int $i): array => [
                     '@type' => 'ListItem'
                     , 'position' => $i
@@ -135,7 +131,7 @@ class SchemaGenerator
             '@type' => 'ItemList'
             , 'itemListElement' => array_merge(
                 XPathHelper::getList($this->_xpathh, '
-(//*[sg:css-class-contains(@class, "navigation__pages")])[1]
+(//*[sg:css-classlist-contains(@class, "navigation__pages")])[1]
     //a
                     ', fn (\DOMNode $item, int $i): array => [
                         '@type' => 'WebPage'
@@ -147,7 +143,7 @@ class SchemaGenerator
                         ,
                     ]
                 ), XPathHelper::getList($this->_xpathh, '
-//*[sg:css-class-contains(@class, "sorting__item")]
+//*[sg:css-classlist-contains(@class, "sorting__item")]
                     ', fn (\DOMNode $item, int $i): array => [
                         '@type' => 'ListItem'
                         , 'position' => $i
@@ -175,8 +171,8 @@ class SchemaGenerator
     */
     protected function _getProductsItemListElement(\DOMNode $item): array
     {
-        $href = XPathHelper::getOne([$this->_xpathh, $item], './/*[sg:css-class-contains(@class, "product-list__image")]');
-        $info = XPathHelper::getOne([$this->_xpathh, $item,], './/*[sg:css-class-contains(@class, "product-list__info")]');
+        $href = XPathHelper::getOne([$this->_xpathh, $item], './/*[sg:css-classlist-contains(@class, "product-list__image")]');
+        $info = XPathHelper::getOne([$this->_xpathh, $item,], './/*[sg:css-classlist-contains(@class, "product-list__info")]');
         $price = StringHelper::getPrice(XPathHelper::getOneText([$this->_xpathh, $item,], '
 .//datalist
     /option[@value="product_price"]
@@ -201,13 +197,13 @@ class SchemaGenerator
                 , '@id' => $url
                 , 'url' => $url
                 , 'description' => XPathHelper::getOneText([$this->_xpathh, $info,], '
-.//*[sg:css-class-contains(@class, "product-list__desc")]
+.//*[sg:css-classlist-contains(@class, "product-list__desc")]
                 ')
                 , 'image' => StringHelper::getUrl(XPathHelper::getOneText([$this->_xpathh, $href,], '
 .//img/@src
                 '), $this->_site_url)
                 , 'name' => XPathHelper::getOneText([$this->_xpathh, $info,], '
-.//*[sg:css-class-contains(@class, "product-list__name")]
+.//*[sg:css-classlist-contains(@class, "product-list__name")]
                 ')
                 , 'datePublished' => XPathHelper::getOneText([$this->_xpathh, $item,], '
 .//datalist/option[@value="product_year"]/text()
@@ -235,7 +231,7 @@ class SchemaGenerator
         return [
             '@type' => 'ItemList'
             , 'itemListElement' => XPathHelper::getList($this->_xpathh, '
-//*[sg:css-class-contains(@class, "product-list__item")]
+//*[sg:css-classlist-contains(@class, "product-list__item")]
                 ', fn (\DOMNode $item): array => $this->_getProductsItemListElement($item)
             )
         ];
@@ -248,7 +244,7 @@ class SchemaGenerator
     */
     function _getProduct(): array {
         $price = StringHelper::getPrice(XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "product-info__price")]
+//*[sg:css-classlist-contains(@class, "product-info__price")]
     /text()
         '));
 
@@ -264,7 +260,7 @@ class SchemaGenerator
         return [
             '@type' => 'Book'
             , 'name' => XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "product-info__name")]
+//*[sg:css-classlist-contains(@class, "product-info__name")]
     /text()
             ')
             , 'description' => XPathHelper::getOneText($this->_xpathh, '
@@ -273,16 +269,16 @@ class SchemaGenerator
             ')
             , 'url' => StringHelper::getUrl($this->_url, $this->_site_url)
             , 'image' => StringHelper::getUrl(XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "product-info__image")]
+//*[sg:css-classlist-contains(@class, "product-info__image")]
     //img
         /@src
             '), $this->_site_url)
             , 'datePublished' => StringHelper::getYear(XPathHelper::getOneText($this->_xpathh, '
 (
 //*[
-    sg:css-class-contains(@class, "product-info__left")][contains(text(), "Год издания")
+    sg:css-classlist-contains(@class, "product-info__left")][contains(text(), "Год издания")
 ]/following-sibling::*[
-    sg:css-class-contains(@class, "product-info__text")
+    sg:css-classlist-contains(@class, "product-info__text")
 ]
 )[1]/text()
             '))
@@ -291,9 +287,9 @@ class SchemaGenerator
                 , 'name' => XPathHelper::getOneText($this->_xpathh, '
 (
 //*[
-    sg:css-class-contains(@class, "product-info__left")][contains(text(), "Автор")
+    sg:css-classlist-contains(@class, "product-info__left")][contains(text(), "Автор")
 ]/following-sibling::*[
-    sg:css-class-contains(@class, "product-info__text")
+    sg:css-classlist-contains(@class, "product-info__text")
 ]
 )[1]/text()
                 ')
@@ -322,22 +318,22 @@ class SchemaGenerator
                 ,
             ]
             , 'openingHours' => StringHelper::getOpeningHours(XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "header__schedule")]
+//*[sg:css-classlist-contains(@class, "header__schedule")]
     /text()
             '))
             , 'image' => StringHelper::getUrl(XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "header__logo")]
+//*[sg:css-classlist-contains(@class, "header__logo")]
     //img
         /@src
             '), $this->_site_url)
             , 'email' => XPathHelper::getOneText($this->_xpathh, '
 (
-    //*[sg:css-class-contains(@class, "side-contacts__name")][contains(text(), "@")]
+    //*[sg:css-classlist-contains(@class, "side-contacts__name")][contains(text(), "@")]
     | //a[starts-with(@href, "mailto:")]
 )[1]/text()
             ')
             , 'telephone' => StringHelper::getTelephone(XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "header__phone-item")]/text()
+//*[sg:css-classlist-contains(@class, "header__phone-item")]/text()
             '))
             ,
         ];
@@ -354,20 +350,20 @@ class SchemaGenerator
             , 'name' => 'Новости'
             , 'url' => StringHelper::getUrl('/news', $this->_site_url)
             , 'itemListElement' => XPathHelper::getList($this->_xpathh, '
-(//*[sg:css-class-contains(@class, "news__list")])[1]
-    //*[sg:css-class-contains(@class, "news__item")]
+(//*[sg:css-classlist-contains(@class, "news__list")])[1]
+    //*[sg:css-classlist-contains(@class, "news__item")]
             ', fn (\DOMNode $item, int $i): array => [
                     '@type' => 'NewsArticle'
                     , 'headline' => XPathHelper::getOneText([$this->_xpathh, $item,], '
-.//*[sg:css-class-contains(@class, "news__name")]//a/text()
+.//*[sg:css-classlist-contains(@class, "news__name")]//a/text()
                     ')
                     , 'url' => StringHelper::getUrl(XPathHelper::getOneText([$this->_xpathh, $item,], '
-.//*[sg:css-class-contains(@class, "news__name")]//a/@href
+.//*[sg:css-classlist-contains(@class, "news__name")]//a/@href
                     '), $this->_site_url)
                     , 'datePublished' => StringHelper::getDate(XPathHelper::getOneText([$this->_xpathh, $item,], '
 (
-    .//*[sg:css-class-contains(@class, "news__time")]
-        | .//*[sg:css-class-contains(@class, "news__desc")][2]
+    .//*[sg:css-classlist-contains(@class, "news__time")]
+        | .//*[sg:css-classlist-contains(@class, "news__desc")][2]
 )/text()
                     '))
                     ,
@@ -391,7 +387,7 @@ class SchemaGenerator
     /text()
             ')
             , 'image' => StringHelper::getUrl(XPathHelper::getOneText($this->_xpathh, '
-//*[sg:css-class-contains(@class, "header__logo")]
+//*[sg:css-classlist-contains(@class, "header__logo")]
     //img
         /@src
             '), $this->_site_url)

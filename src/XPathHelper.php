@@ -11,11 +11,11 @@ abstract class XPathHelper
     *
     * @param mixed $item - результат
     * @param int &$i - позиция
-    * @param string | \Closure $sub - функция преобразования
+    * @param callable $sub - функция преобразования
     *
     * @return mixed
     */
-    protected static function _compute($result, int &$i, string | \Closure $sub)
+    protected static function _compute($result, int &$i, callable $sub)
     {
         return $sub($result, ++ $i);
     }
@@ -51,14 +51,15 @@ abstract class XPathHelper
     *
     * @param array | \DOMXPath $ctx - объект XPath или массив: объект XPath и контекст
     * @param string $query - запрос XPath
-    * @param string | \Closure $sub - доп. обработчик результата
+    * @param ?callable $sub - доп. обработчик результата
     *
     * @return \Generator
     */
-    public static function getList(array | \DOMXPath $ctx, string $query, string | \Closure $sub = 'dummyNode'): \Generator {
+    public static function getList(array | \DOMXPath $ctx, string $query, ?callable $sub = null): \Generator {
         [$args, $i,] = [[&$query,], 0,];
 
         if (is_array($ctx)) [$ctx, $args[],] = $ctx;
+        if (!$sub) $sub = [static::class, 'dummyNode',];
 
         foreach ($ctx->query(... $args) as $item)
             yield static::_compute($item, $i, $sub);
@@ -69,11 +70,11 @@ abstract class XPathHelper
     *
     * @param array | \DOMXPath $ctx - объект XPath или массив: объект XPath и контекст
     * @param string $query - запрос XPath
-    * @param string | \Closure $sub - доп. обработчик результата
+    * @param ?callable $sub - доп. обработчик результата
     *
     * @return ?\DOMNode
     */
-    public static function getOne(array | \DOMXPath $ctx, string $query, string | \Closure $sub = 'dummyNode'): ?\DOMNode {
+    public static function getOne(array | \DOMXPath $ctx, string $query, ?callable $sub = null): ?\DOMNode {
         return static::getList($ctx, $query, $sub)->current();
     }
 
@@ -82,12 +83,12 @@ abstract class XPathHelper
     *
     * @param array | \DOMXPath $ctx - объект XPath или массив: объект XPath и контекст
     * @param string $query - запрос XPath
-    * @param string | \Closure $sub - доп. обработчик результата
+    * @param ?callable $sub - доп. обработчик результата
     *
     * @return \Generator
     */
-    public static function getListText(array | \DOMXPath $ctx, string $query, string | \Closure $sub = 'dummyText'): \Generator {
-        return static::getList($ctx, $query, $sub);
+    public static function getListText(array | \DOMXPath $ctx, string $query, ?callable $sub = null): \Generator {
+        return static::getList($ctx, $query, $sub ?: [static::class, 'dummyText',]);
     }
 
     /**
@@ -95,11 +96,11 @@ abstract class XPathHelper
     *
     * @param array | \DOMXPath $ctx - объект XPath или массив: объект XPath и контекст
     * @param string $query - запрос XPath
-    * @param string | \Closure $sub - доп. обработчик результата
+    * @param ?callable $sub - доп. обработчик результата
     *
     * @return ?string
     */
-    public static function getOneText(array | \DOMXPath $ctx, string $query, string | \Closure $sub = 'dummyText'): ?string {
+    public static function getOneText(array | \DOMXPath $ctx, string $query, ?callable $sub = null): ?string {
         return static::getListText($ctx, $query, $sub)->current();
     }
 }

@@ -229,4 +229,17 @@ class StringHelper {
 
         return null;
     }
+
+    /**
+    * Проверка существования псевдокласса в списке псевдоклассов
+    *
+    * @param ?string $classList - список псевдоклассов
+    * @param string $class - псевдокласс
+    *
+    * @return bool
+    */
+    public static function cssClassListContains(?string $classList, string $class): bool
+    {
+        return preg_match('{(?:^|\s)' . preg_quote($class) . '(\s|$)}uis', $classList);
+    }
 }
