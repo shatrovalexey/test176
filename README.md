@@ -20,10 +20,10 @@ $sgh = new SchemaGenerator($url_site, $site_name);
 */
 
 // результат в виде ассоциативного массива
-$aresult = $sgh->asArray($src);
+$aResult = $sgh->asArray($src);
 
 // результат в формате JSON
-$sresult = $sgh->asString($src);
+$sResult = $sgh->asString($src);
 ```
 
 ### АВТОР
