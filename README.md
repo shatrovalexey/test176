@@ -10,10 +10,10 @@
 ### ПРИМЕР ИСПОЛЬЗОВАНИЯ
 ```
 /**
-* @var string $url_current - URL текущей страницы
 * @var string $url_site - URL сайта
+* @var string $site_name - название сайта
 */
-$sgh = new SchemaGenerator($url_current, $url_site);
+$sgh = new SchemaGenerator($url_site, $site_name);
 
 /**
 * @var string $src - HTML текущей страницы

@@ -51,14 +51,14 @@ class StringHelper {
     /**
     * Абсолютный URL по относительному
     *
-    * @param ?string $url
-    * @param string $site_url
+    * @var ?string $url_current - текущий URL
+    * @var string $url_site - URL сайта
     *
     * @return string
     */
-    public static function getUrl(?string $url, string $site_url): string
+    public static function getUrl(?string $url_current, string $url_site): string
     {
-        [$origin, $url,] = array_map('parse_url', [$site_url, $url,]);
+        [$origin, $url,] = array_map('parse_url', [$url_site, $url_current,]);
 
         if (mb_strpos($url['path'], '/') !== 0)
             $url['path'] = '/' . $url['path'];
