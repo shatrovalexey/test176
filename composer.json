@@ -1,0 +1,17 @@
+{
+    "name": "alexe/schema",
+    "description": "Пример генератора application/ld+json для schema.org",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Alexe\\Schema\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Алексей",
+            "email": "mail@ashatrov.ru"
+        }
+    ],
+    "require": {}
+}
